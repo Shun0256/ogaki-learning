@@ -156,7 +156,7 @@ export function resolveAchievements({ investigatedCount, totalMarkers, openedDet
     return {
       ...achievement,
       unlocked,
-      image: achievement.imageName ? `/img/${achievement.imageName}` : null
+      image: achievement.imageName ? `${import.meta.env.BASE_URL}img/${achievement.imageName}` : null
     }
   })
 }

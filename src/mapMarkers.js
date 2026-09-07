@@ -1,12 +1,14 @@
 import L from 'leaflet'
 
+const imageBaseUrl = `${import.meta.env.BASE_URL}img/`
+
 // POI一覧 — 必要なら座標は微調整してください
 const markers = [
   {
     id: 'ogaki-castle',
     name: '大垣城',
     color: '#d9534f',
-    image: '/img/ogaki-castle.jpg',
+    image: `${imageBaseUrl}ogaki-castle.jpg`,
     lat: 35.36197778,
     lon: 136.61607222,
     description: '大垣城（復元天守）',
@@ -39,7 +41,7 @@ const markers = [
     id: 'shiki',
     name: '四季の広場',
     // Nominatim: 四季の広場, 馬場町
-    image: '/img/shiki.jpeg',
+    image: `${imageBaseUrl}shiki.jpeg`,
     lat: 35.3577073,
     lon: 136.6123776,
     description: '四季の広場 — 船町・馬場町付近の公園',
@@ -72,7 +74,7 @@ const markers = [
     id: 'oku-hosomichi',
     name: '奥の細道むすびの地記念館',
     color: '#5bc0de',
-    image: '/img/oku-hosomichi.jpg',
+    image: `${imageBaseUrl}oku-hosomichi.jpg`,
     // Wikipedia に掲載の座標（北緯35°21'22.4" 東経136°36'42.6"）
     // 小数表記: 35.35622222, 136.61183333
     lat: 35.35622222,
@@ -107,7 +109,7 @@ const markers = [
     id: 'suimon',
     name: '水門川（船町川湊周辺）',
     color: '#5cb85c',
-    image: '/img/suimon.jpg',
+    image: `${imageBaseUrl}suimon.jpg`,
     // 船町川湊付近の代表点（大垣市公式ページを参照）
     lat: 35.3568,
     lon: 136.6130,
@@ -142,7 +144,7 @@ const markers = [
     name: 'スイトピアセンター',
     color: '#f0ad4e',
     // Nominatim: スイトピアセンター（大垣市）
-    image: '/img/suitopia-center.jpg',
+    image: `${imageBaseUrl}suitopia-center.jpg`,
     lat: 35.3642795,
     lon: 136.6079016,
     description: 'スイトピアセンター（公園/施設）',
@@ -174,7 +176,7 @@ const markers = [
     id: 'funamoto-minato',
     name: '船町港跡',
     color: '#9b59b6',
-    image: '/img/minato.jpg',
+    image: `${imageBaseUrl}minato.jpg`,
     lat: 35.3570,
     lon: 136.6123,
     description: '船町港跡',
@@ -207,7 +209,7 @@ const markers = [
     id: 'kagano-hachiman',
     name: '加賀野八幡神社',
     color: '#e74c3c',
-    image: '/img/yahata-jinja.jpg',
+    image: `${imageBaseUrl}yahata-jinja.jpg`,
     lat: 35.3548,
     lon: 136.6155,
     description: '加賀野八幡神社',
