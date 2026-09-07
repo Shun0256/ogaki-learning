@@ -1,0 +1,63 @@
+:root {
+  --text: #4f5f6f;
+  --text-h: #18324a;
+  --bg: #f4f9ff;
+  --border: #dfeefb;
+  --accent: #2f6fb4;
+  --accent-soft: #e8f3ff;
+  --shadow: rgba(24, 50, 74, 0.12) 0 14px 30px;
+  --sans: 'Noto Sans JP', 'Segoe UI', Roboto, sans-serif;
+  --heading: 'Noto Sans JP', 'Segoe UI', Roboto, sans-serif;
+  font: 16px/1.65 var(--sans);
+  letter-spacing: 0.01em;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--heading);
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}
+
+.leaflet-container {
+  font: inherit;
+}
+
+.leaflet-control-attribution {
+  background: rgba(255,255,255,0.9);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
