@@ -1,5 +1,33 @@
-# Vue 3 + Vite
+大垣市地域学習Web教材
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+岐阜県大垣市を題材とした、中高生向けの地域学習Web教材です。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+地図上のスポットを探索し、解説やミニクイズを通して大垣市の歴史・文化・水辺について学習できます。
+
+・主な機能
+  地図上から学習スポットを選択
+  各地点の解説を表示
+  3択ミニクイズ
+  理解チェック
+  実績機能
+  全地点学習後の最終確認問題
+
+・学習スポット
+  大垣城
+  四季の広場
+  奥の細道むすびの地記念館
+  水門川
+  スイトピアセンター
+  船町港跡
+  加賀野八幡神社
+・使用技術
+  Vue 3
+  Vite
+  JavaScript
+  Leaflet
+  Bootstrap
+
+GitHub Pagesを利用して公開しています。
+
+制作
+卒業研究として制作しています。
