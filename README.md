@@ -26,7 +26,6 @@
 ・Vite
 ・JavaScript
 ・Leaflet
-・Bootstrap
 
 GitHub Pagesを利用して公開しています。
 
