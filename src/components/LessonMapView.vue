@@ -15,8 +15,6 @@
             >
               <button
                 type="button"
-              loadFirstVisitTutorialState()
-
                 class="achievement-button"
                 @click="openAchievement(achievement)"
               >
@@ -468,6 +466,7 @@ export default {
       loadLearningCompleted()
       loadQuizPerfectScoreCompleted()
       loadOpenedDetailCount()
+      loadFirstVisitTutorialState()
       achievementsWatchReady.value = true
       invalidateMapSize()
     })
