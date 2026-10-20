@@ -67,6 +67,22 @@
         <button class="confirm-quiz-button" type="button" :disabled="!allInvestigated" @click="openConfirmQuiz">
           {{ learningCompleted ? '確認問題へ（再挑戦）' : '確認問題へ' }}
         </button>
+
+        <section class="bonus-access" :class="{ 'bonus-access-unlocked': learningCompleted }" aria-label="クリア特典">
+          <span class="bonus-access-label">✦ クリア特典</span>
+          <template v-if="learningCompleted">
+            <h3>水の都の、<br />もう一つの物語</h3>
+            <p>おめでとう！ 特別な解説ページが解放されました。</p>
+            <button type="button" class="bonus-access-button" @click="openBonusStory">
+              特別ページを見る →
+            </button>
+          </template>
+          <template v-else>
+            <h3>？？？</h3>
+            <p>最終確認問題に合格すると、特別な物語が解放されます。</p>
+            <span class="bonus-access-locked">🔒 未解放</span>
+          </template>
+        </section>
         <button class="tutorial-open-button" type="button" @click="reopenFirstVisitTutorial">
           チュートリアルを見る
         </button>
@@ -86,6 +102,7 @@
       @completed="markLearningCompleted"
       @perfect-score="markQuizPerfectScoreCompleted"
     />
+    <BonusStoryModal :visible="showBonusStory" @close="showBonusStory = false" />
     <AchievementDetailModal
       :visible="showAchievementModal"
       :achievement="selectedAchievement"
@@ -129,6 +146,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import MarkerDetail from './MarkerDetail.vue'
 import ConfirmationQuizModal from './ConfirmationQuizModal.vue'
+import BonusStoryModal from './BonusStoryModal.vue'
 import AchievementDetailModal from './AchievementDetailModal.vue'
 import AchievementListModal from './AchievementListModal.vue'
 import FirstVisitTutorial from './FirstVisitTutorial.vue'
@@ -163,6 +181,7 @@ export default {
   components: {
     MarkerDetail,
     ConfirmationQuizModal,
+    BonusStoryModal,
     AchievementDetailModal,
     AchievementListModal,
     FirstVisitTutorial
@@ -181,6 +200,7 @@ export default {
     const selectedMarker = ref(null)
     const showDetail = ref(false)
     const showConfirmQuiz = ref(false)
+    const showBonusStory = ref(false)
     const selectedAchievement = ref(null)
     const showAchievementModal = ref(false)
     const showAchievementListModal = ref(false)
@@ -308,6 +328,11 @@ export default {
     const openConfirmQuiz = () => {
       if (!allInvestigated.value) return
       showConfirmQuiz.value = true
+    }
+
+    const openBonusStory = () => {
+      if (!learningCompleted.value) return
+      showBonusStory.value = true
     }
 
     const openAchievement = (achievement) => {
@@ -487,6 +512,8 @@ export default {
       selectedMarker,
       showDetail,
       showConfirmQuiz,
+      showBonusStory,
+      openBonusStory,
       selectedAchievement,
       showAchievementModal,
       showAchievementListModal,
@@ -865,4 +892,59 @@ export default {
   border-top-right-radius: 18px;
   border-bottom-right-radius: 18px;
 }
+
+.bonus-access {
+  border: 1px solid #dce7eb;
+  border-radius: 14px;
+  padding: 14px 12px;
+  background: #f6f9fb;
+  color: #506875;
+}
+.bonus-access-unlocked {
+  border-color: #b5ddd6;
+  background: linear-gradient(155deg, #effaf7, #e8f3f9);
+  color: #23576b;
+}
+.bonus-access-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #67818d;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.bonus-access-unlocked .bonus-access-label { color: #25847b; }
+.bonus-access h3 {
+  margin: 0 0 8px;
+  font-size: .94rem;
+  line-height: 1.5;
+  color: inherit;
+}
+.bonus-access p {
+  margin: 0;
+  font-size: .78rem;
+  line-height: 1.7;
+}
+.bonus-access-locked {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: .76rem;
+  font-weight: 700;
+  color: #718893;
+}
+.bonus-access-button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 10px;
+  background: #286d7b;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bonus-access-button:hover { background: #1f5560; }
+.bonus-access-button:focus-visible { outline: 3px solid #b88b4e; outline-offset: 2px; }
 </style>
