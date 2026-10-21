@@ -419,4 +419,63 @@ footer button {
   padding: 8px 16px;
   cursor: pointer;
 }
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    width: 100%;
+    max-height: 94vh;
+    max-height: 94dvh;
+    border-radius: 18px 18px 0 0;
+  }
+  .modal header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 14px 16px;
+  }
+  .modal .content {
+    padding: 18px 16px 22px;
+  }
+  .image-wrap img {
+    height: 145px;
+  }
+  .explanation-title {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #18324a;
+  }
+  .section-block {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #f1f6f5;
+    border: 0;
+    border-left: 3px solid #4b8178;
+    border-radius: 0 4px 4px 0;
+  }
+  .section-subtitle {
+    margin-bottom: 7px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #214a46;
+  }
+  .section-text,
+  .explanation-text {
+    font-size: 1.125rem;
+    line-height: 1.85;
+    color: #263941;
+    overflow-wrap: anywhere;
+  }
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: #fcfeff;
+    border-top: 1px solid #e7f0f8;
+  }
+}
 </style>

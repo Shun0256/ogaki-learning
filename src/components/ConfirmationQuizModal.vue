@@ -76,6 +76,9 @@
 
         <div v-if="submitted" class="result-box">
           <p class="score">結果: {{ score }} / {{ questions.length }} 問 正解</p>
+          <p v-if="score >= passingScore" class="bonus-unlocked-message">
+            合格おめでとうございます！調査状況の「クリア特典」から、特別ページ「水の都の、もう一つの物語。」をいつでも読めるようになりました。
+          </p>
           <p class="result-note">○ 正解・✕ 不正解は各問題に表示。正解選択肢を<span class="note-correct">緑</span>、誤選択肢を<span class="note-wrong">赤</span>でハイライトしています。</p>
         </div>
       </section>
@@ -310,6 +313,7 @@ export default {
       answeredCount,
       progressPercent,
       score,
+      passingScore: PASSING_SCORE,
       close,
       submitQuiz,
       resetQuiz,
@@ -453,6 +457,14 @@ export default {
   margin: 0;
   font-weight: 700;
   color: #1e456b;
+}
+.bonus-unlocked-message {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid #3c8c76;
+  background: #edf7f1;
+  color: #245b48;
+  line-height: 1.75;
 }
 .result-note {
   margin: 6px 0 0;

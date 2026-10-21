@@ -61,3 +61,19 @@ button {
   padding: 4px 8px;
   font-size: 11px;
 }
+
+.bonus-story-tooltip {
+  pointer-events: none;
+  padding: 5px 9px;
+  border: 1px solid #d7b95b;
+  border-radius: 4px;
+  background: #fffdf3;
+  color: #174e5a;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 3px 12px rgba(13, 49, 62, 0.2);
+}
+
+.bonus-story-tooltip::before {
+  border-top-color: #d7b95b;
+}

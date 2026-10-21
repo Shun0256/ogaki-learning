@@ -86,6 +86,16 @@
       @completed="markLearningCompleted"
       @perfect-score="markQuizPerfectScoreCompleted"
     />
+    <BonusStoryModal :visible="showBonusStory" @close="showBonusStory = false" />
+    <div v-if="bonusUnlockPopupVisible" class="bonus-unlock-popup" role="status" aria-live="polite">
+      <div class="bonus-unlock-icon" aria-hidden="true">★</div>
+      <div class="bonus-unlock-copy">
+        <p class="bonus-unlock-label">CLEAR REWARD UNLOCKED</p>
+        <h2>特別ページが解放されました</h2>
+        <p>「水の都の、もう一つの物語。」は地図上の特別マーカーからいつでも読めます。</p>
+      </div>
+      <button type="button" class="bonus-unlock-close" aria-label="通知を閉じる" @click="hideBonusUnlockPopup">×</button>
+    </div>
     <AchievementDetailModal
       :visible="showAchievementModal"
       :achievement="selectedAchievement"
@@ -106,7 +116,7 @@
       @close="completeFirstVisitTutorial"
       @open-confirm-quiz="openConfirmQuiz"
     />
-    <div v-if="unlockPopupAchievement" class="achievement-unlock-popup" role="status" aria-live="polite">
+    <div v-if="unlockPopupAchievement" class="achievement-unlock-popup" :class="{ 'achievement-unlock-popup-below': bonusUnlockPopupVisible }" role="status" aria-live="polite">
       <div class="achievement-unlock-header">実績を達成しました</div>
       <div class="achievement-unlock-content">
         <img
@@ -132,6 +142,7 @@ import ConfirmationQuizModal from './ConfirmationQuizModal.vue'
 import AchievementDetailModal from './AchievementDetailModal.vue'
 import AchievementListModal from './AchievementListModal.vue'
 import FirstVisitTutorial from './FirstVisitTutorial.vue'
+import BonusStoryModal from './BonusStoryModal.vue'
 import { addMarkers, getMarkers } from '../mapMarkers'
 import { resolveAchievements } from '../achievements'
 import L from 'leaflet'
@@ -165,7 +176,8 @@ export default {
     ConfirmationQuizModal,
     AchievementDetailModal,
     AchievementListModal,
-    FirstVisitTutorial
+    FirstVisitTutorial,
+    BonusStoryModal
   },
   props: {
     isVisible: {
@@ -175,6 +187,8 @@ export default {
   },
   setup(props) {
     let map = null
+    let mapResizeObserver = null
+    let markerBounds = null
     const markerList = ref(getMarkers())
     const totalMarkers = markerList.value.length
     const investigatedIds = ref(new Set())
@@ -192,7 +206,11 @@ export default {
     const achievementsWatchReady = ref(false)
     const resetSignal = ref(0)
     const showFirstVisitTutorial = ref(false)
+    const showBonusStory = ref(false)
+    const bonusUnlockPopupVisible = ref(false)
     let unlockPopupTimer = null
+    let bonusUnlockPopupTimer = null
+    let bonusStoryMarker = null
 
     const COMPLETION_STORAGE_KEY = 'lesson-learning-completed'
     const QUIZ_PERFECT_COMPLETION_STORAGE_KEY = 'lesson-quiz-perfect-completed'
@@ -228,7 +246,23 @@ export default {
 
     const markLearningCompleted = () => {
       if (!allInvestigated.value) return
+      const newlyCompleted = !learningCompleted.value
       persistLearningCompleted(true)
+      if (newlyCompleted) showBonusUnlockPopup()
+    }
+
+    const showBonusUnlockPopup = () => {
+      bonusUnlockPopupVisible.value = true
+      if (bonusUnlockPopupTimer) clearTimeout(bonusUnlockPopupTimer)
+      bonusUnlockPopupTimer = setTimeout(hideBonusUnlockPopup, 8000)
+    }
+
+    const hideBonusUnlockPopup = () => {
+      bonusUnlockPopupVisible.value = false
+      if (bonusUnlockPopupTimer) {
+        clearTimeout(bonusUnlockPopupTimer)
+        bonusUnlockPopupTimer = null
+      }
     }
 
     const markQuizPerfectScoreCompleted = () => {
@@ -388,6 +422,43 @@ export default {
       }
     }
 
+    const syncBonusStoryMarker = () => {
+      if (!map) return
+      if (!learningCompleted.value) {
+        if (bonusStoryMarker) {
+          bonusStoryMarker.remove()
+          bonusStoryMarker = null
+        }
+        return
+      }
+      if (bonusStoryMarker) return
+
+      const iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="54" height="68" viewBox="0 0 54 68"><path d="M27 2C12.6 2 3 12.4 3 26c0 17 24 39 24 39s24-22 24-39C51 12.4 41.4 2 27 2Z" fill="#126879" stroke="#fff" stroke-width="3"/><circle cx="27" cy="26" r="16" fill="#f5d77b"/><path d="m27 14 3.5 7.4 8.2 1.2-5.9 5.8 1.4 8.2-7.2-3.9-7.2 3.9 1.4-8.2-5.9-5.8 8.2-1.2Z" fill="#174b5b"/></svg>'
+      const icon = L.icon({
+        iconUrl: `data:image/svg+xml,${encodeURIComponent(iconSvg)}`,
+        iconSize: [54, 68],
+        iconAnchor: [27, 65],
+        tooltipAnchor: [0, -58]
+      })
+      bonusStoryMarker = L.marker(markerBounds.getCenter(), {
+        icon,
+        keyboard: false,
+        zIndexOffset: 2000,
+        riseOnHover: true
+      }).addTo(map)
+      bonusStoryMarker.bindTooltip('特別ページ｜水の都の、もう一つの物語。', {
+        permanent: true,
+        direction: 'top',
+        offset: [0, -4],
+        className: 'bonus-story-tooltip'
+      })
+      bonusStoryMarker.on('click', () => {
+        showBonusStory.value = true
+      })
+    }
+
+    watch(learningCompleted, syncBonusStoryMarker)
+
     watch(() => props.isVisible, (visible) => {
       if (visible) {
         invalidateMapSize()
@@ -413,46 +484,59 @@ export default {
     })
 
     onMounted(() => {
-      const markerBounds = L.latLngBounds(markerList.value.map(marker => [marker.lat, marker.lon]))
+      markerBounds = L.latLngBounds(markerList.value.map(marker => [marker.lat, marker.lon]))
 
       map = L.map('map', {
-        maxBounds: markerBounds.pad(0.03),
-        maxBoundsViscosity: 0.95,
-        minZoom: 14,
-        maxZoom: 17
+        minZoom: 10,
+        maxZoom: 17,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        touchZoom: false,
+        keyboard: false,
+        zoomControl: false,
+        zoomAnimation: false,
+        fadeAnimation: false,
+        markerZoomAnimation: false
       })
+
+      map.dragging.disable()
+      map.scrollWheelZoom.disable()
+      map.doubleClickZoom.disable()
+      map.boxZoom.disable()
+      map.touchZoom.disable()
+      map.keyboard.disable()
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map)
 
-      setTimeout(() => {
-        try {
-          map.invalidateSize()
-        } catch (e) {}
-        const targetZoom = map.getBoundsZoom(markerBounds.pad(0.01), false)
-        map.setView(markerBounds.getCenter(), Math.min(targetZoom, 17))
-        // Use symmetric padding to avoid large empty areas on left/right
-        map.fitBounds(markerBounds, {
-          padding: [40, 40],
-          maxZoom: 17
-        })
-      }, 100)
+      let previousMapSize = null
+      mapResizeObserver = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect
+        if (!width || !height) return
+        if (previousMapSize?.width === width && previousMapSize?.height === height) return
+        previousMapSize = { width, height }
 
-      // Disable zoom interactions and lock zoom level
-      try {
-        if (map.scrollWheelZoom && typeof map.scrollWheelZoom.disable === 'function') map.scrollWheelZoom.disable()
-        if (map.doubleClickZoom && typeof map.doubleClickZoom.disable === 'function') map.doubleClickZoom.disable()
-        if (map.boxZoom && typeof map.boxZoom.disable === 'function') map.boxZoom.disable()
-        if (map.touchZoom && typeof map.touchZoom.disable === 'function') map.touchZoom.disable()
-        if (map.keyboard && typeof map.keyboard.disable === 'function') map.keyboard.disable()
-        if (map.zoomControl) map.removeControl(map.zoomControl)
-        const currentZoom = map.getZoom()
-        map.setMinZoom(currentZoom)
-        map.setMaxZoom(currentZoom)
-      } catch (e) {
-        console.warn('Could not fully disable map zoom:', e)
-      }
+        requestAnimationFrame(() => {
+          if (!map) return
+          map.invalidateSize({ pan: false, animate: false })
+          map.setMinZoom(10)
+          map.setMaxZoom(17)
+        map.fitBounds(markerBounds, {
+            paddingTopLeft: [56, 56],
+            paddingBottomRight: [56, 56],
+            maxZoom: 17,
+            animate: false
+        })
+
+          const currentZoom = map.getZoom()
+          map.setMinZoom(currentZoom)
+          map.setMaxZoom(currentZoom)
+        })
+      })
+      mapResizeObserver.observe(map.getContainer())
 
       const onMarkerClick = (m) => {
         try { console.log('onMarkerClick:', m, typeof m, m && m.image && typeof m.image) } catch (e) {}
@@ -468,11 +552,17 @@ export default {
       loadOpenedDetailCount()
       loadFirstVisitTutorialState()
       achievementsWatchReady.value = true
+      syncBonusStoryMarker()
       invalidateMapSize()
     })
 
     onBeforeUnmount(() => {
       hideUnlockPopup()
+      hideBonusUnlockPopup()
+      if (mapResizeObserver) {
+        mapResizeObserver.disconnect()
+        mapResizeObserver = null
+      }
       if (map) {
         map.remove()
         map = null
@@ -494,6 +584,8 @@ export default {
       learningCompleted,
       quizPerfectScoreCompleted,
       showFirstVisitTutorial,
+      showBonusStory,
+      bonusUnlockPopupVisible,
       tutorialCurrentStep,
       resetSignal,
       allInvestigated,
@@ -507,6 +599,7 @@ export default {
       openAchievement,
       hideUnlockPopup,
       markLearningCompleted,
+      hideBonusUnlockPopup,
       markQuizPerfectScoreCompleted,
       completeFirstVisitTutorial,
       reopenFirstVisitTutorial
@@ -751,6 +844,73 @@ export default {
   display: grid;
   gap: 10px;
 }
+.achievement-unlock-popup-below {
+  top: 174px;
+}
+.bonus-unlock-popup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  z-index: 12500;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 12px;
+  width: min(500px, calc(100vw - 32px));
+  padding: 16px;
+  transform: translateX(-50%);
+  border: 2px solid #d7b95b;
+  border-radius: 8px;
+  background: linear-gradient(120deg, #fffdf3, #f0f9f8 72%);
+  box-shadow: 0 18px 42px rgba(13, 49, 62, 0.28);
+  animation: bonus-popup-enter 0.35s ease-out both;
+}
+.bonus-unlock-icon {
+  display: grid;
+  width: 48px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 2px solid #d6b34e;
+  border-radius: 50%;
+  background: #fff3bd;
+  color: #916d0d;
+  font-size: 1.6rem;
+}
+.bonus-unlock-copy {
+  min-width: 0;
+}
+.bonus-unlock-label {
+  margin: 0 0 4px;
+  color: #8a6c1c;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+.bonus-unlock-copy h2 {
+  margin: 0;
+  color: #174e5a;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.bonus-unlock-copy p:last-child {
+  margin: 4px 0 0;
+  color: #49656a;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.bonus-unlock-close {
+  align-self: start;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: #547178;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+@keyframes bonus-popup-enter {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 .achievement-unlock-header {
   margin: 0;
   font-size: 0.86rem;
@@ -822,6 +982,30 @@ export default {
 
   .achievement-list-open {
     min-height: 42px;
+  }
+
+  .achievement-unlock-popup-below {
+    top: 184px;
+  }
+
+  .bonus-unlock-popup {
+    top: 12px;
+    grid-template-columns: 42px minmax(0, 1fr) 28px;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .bonus-unlock-icon {
+    width: 40px;
+    font-size: 1.3rem;
+  }
+
+  .bonus-unlock-copy h2 {
+    font-size: 0.92rem;
+  }
+
+  .bonus-unlock-copy p:last-child {
+    font-size: 0.78rem;
   }
 }
 
